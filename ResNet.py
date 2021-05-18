@@ -180,6 +180,13 @@ class ResNet(nn.Module):
         accf = float(acc) / sz
         print(f'accuracy: {accf}')
         return accf
+    def save_model(self, file):
+        torch.save(self, file)
+
+    #classmethod
+    def load_model(file):
+        rnet = torch.laod(file)
+        return rnet
 
 
 def parse_args():
@@ -208,9 +215,11 @@ if __name__ == '__main__':
                                                batch_size=args.batch_size, shuffle=False)
     rnet.eval()
     acc = rnet.compute_acc(test_loader)
-    torch.save(rnet, models_path)
-    rnet = torch.load(models_path)
-    rnet.eval()
-    acc = rnet.compute_acc(test_loader)
+    #torch.save(rnet, models_path)
+    #rnet = torch.load(models_path)
+    rnet.save_model(models_path)
+    rnet1 = ResNet.load_model(models_path)
+    rnet1.eval()
+    acc = rnet1.compute_acc(test_loader)
 
 
