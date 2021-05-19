@@ -53,9 +53,11 @@ class ResNetNunit(nn.Module):
             x = lay.forward(x)
         y = x + xin
         return y
+    """
     def __call__(self, x, *args, **kwargs):
         y = self.forward(x)
         return y
+        """
 
 class ResNet(nn.Module):
     def __init__(self, nchans=3, xsize=64,ysize=64, nfilters=16, nhids=100, ncls=1, res_depth=1):
@@ -185,7 +187,7 @@ class ResNet(nn.Module):
 
     #classmethod
     def load_model(file):
-        rnet = torch.laod(file)
+        rnet = torch.load(file)
         return rnet
 
 
