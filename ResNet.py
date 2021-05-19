@@ -155,7 +155,7 @@ class ResNet(nn.Module):
             accf = float(acc) / sz
             print(f'\n----> epoch:{iter}/{epochs}, loss:{tloss}, acc:{accf}')
 
-    def compute_acc(self, data):
+    def compute_acc(self, data, test_name):
         self.cuda()
         acc = 0
         sz = 0
@@ -176,7 +176,7 @@ class ResNet(nn.Module):
             sz += batch_size
  
         accf = float(acc) / sz
-        print(f'accuracy: {accf}')
+        print(f'{test_name}: accuracy: {accf}')
         return accf
     def save_model(self, file):
         torch.save(self, file)
@@ -195,7 +195,7 @@ def parse_args():
     arg = ap.parse_args()
     return arg
 
-# git token: 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
+# git token: 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
 
 if __name__ == '__main__':
     args = parse_args()
@@ -214,13 +214,13 @@ if __name__ == '__main__':
                                                               )),
                                                batch_size=args.batch_size, shuffle=False)
     rnet.eval()
-    acc = rnet.compute_acc(test_loader)
+    acc = rnet.compute_acc(test_loader, 'test')
     #torch.save(rnet, models_path)
     #rnet = torch.load(models_path)
     rnet.save_model(models_path)
     rnet1 = ResNet.load_model(models_path)
     rnet1.eval()
     print('test set')
-    acc = rnet1.compute_acc(test_loader)
+    acc = rnet1.compute_acc(test_loader, 'test')
 
 
