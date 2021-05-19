@@ -220,6 +220,7 @@ if __name__ == '__main__':
     rnet.save_model(models_path)
     rnet1 = ResNet.load_model(models_path)
     rnet1.eval()
+    print('test set')
     acc = rnet1.compute_acc(test_loader)
 
 
