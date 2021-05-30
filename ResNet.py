@@ -3,6 +3,7 @@ import torch
 
 import torch.nn as nn
 from torchvision import datasets, transforms
+import lib.norm_layer
 
 def norm_image(img):
     LS = len(img.shape)
@@ -69,13 +70,19 @@ class ResNet(nn.Module):
         self.net = nn.ModuleList()
         self.optimizer = None
         self.loss_fun = None
+        self.cuda_flg = torch.cuda.is_available()
+        self.norm_layer = True
 
     def create_net(self,  nfliters=None):
         if nfliters is None:
             nfliters = self.nfilters
         self.net  = nn.ModuleList()
         sz = min(self.xsize, self.ysize)
-        nf = self.nfilters
+
+        if self.norm_layer:
+            norm_layer = lib.norm_layer.NormLayer()
+            self.net.append(norm_layer)
+        nf = self.nchans
         while sz >= 8:
             if len(self.net) > 0:
                 res_unit = ResNetNunit(in_chans=nf,out_chans=nf*2, depth=self.res_depth)
@@ -104,16 +111,19 @@ class ResNet(nn.Module):
             lsf = nn.Softmax()
             self.net.append(lsf)
         lr = 1e-4
+        if self.cuda_flg:
+            self.cuda()
         params = self.parameters()
         self.optimizer = torch.optim.Adam(params=params, lr=lr)
         self.loss_fun = torch.nn.CrossEntropyLoss()
 
     def forward(self,x, should_norm=False):
-        x = x.cuda()
-        if not self.training:
+        if self.cuda_flg:
+            x = x.cuda()
+        if not self.training and self.norm_layer is False:
             x = norm_data(x)
         for lay in self.net:
-            x = lay.forward(x)
+            x = lay(x)
         return x
 
     #def __call__(self,x):
@@ -122,7 +132,7 @@ class ResNet(nn.Module):
         if len(self.net) <= 0:
             self.create_net()
         self.train()
-        self.cuda()
+
         LEN = len(train_loader)
         loss_fun = self.loss_fun
         batch_size = -1
@@ -135,15 +145,18 @@ class ResNet(nn.Module):
                 batch_size = x.shape[0]
                 self.optimizer.zero_grad()
                 #loss = self.loss_fun(y_pred,y)
-                y = y.cuda()
+                if self.cuda_flg:
+                    y = y.cuda()
                 loss = loss_fun(y_pred, y)
                 amax = torch.argmax(y_pred, dim=1)
                 ids = amax == y
                 ids = ids.cpu()
+                """
                 for i in range(batch_size):
                     if ids[i]:
                         acc += 1
-
+                """
+                acc += ids.sum()
                 sz += batch_size
                 tloss += loss
                 loss.backward()
@@ -154,6 +167,8 @@ class ResNet(nn.Module):
             tloss /= LEN
             accf = float(acc) / sz
             print(f'\n----> epoch:{iter}/{epochs}, loss:{tloss}, acc:{accf}')
+        device = 'cuda' if self.cuda_flg else 'cpu'
+        print(f'End of train on device: {device}, accuracy: {accf}')
 
     def compute_acc(self, data, test_name):
         self.cuda()
@@ -192,6 +207,7 @@ def parse_args():
     ap = argparse.ArgumentParser(description='MNIst example')
     ap.add_argument('--batch_size', dest='batch_size', type=int, help='Size of batch')
     ap.add_argument('--epochs', dest='epochs', type=int, required=True)
+    ap.add_argument('--res_depth', dest='res_depth', type=int, default=3)
     arg = ap.parse_args()
     return arg
 
@@ -200,9 +216,9 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     import CustomDataLoader
-    cdl = CustomDataLoader.CustomDataLoader()
+    cdl = CustomDataLoader.CustomDataLoader(norm_flag=False)
     dl = cdl.get_loader()
-    rnet = ResNet(nchans=1, xsize=28,ysize=28,ncls=10)
+    rnet = ResNet(nchans=1, xsize=28,ysize=28,ncls=10, res_depth=args.res_depth)
     cuda_flg = torch.cuda.is_available()
     print(f'cuda_flg={cuda_flg}')
     rnet.fit(dl, epochs=args.epochs)

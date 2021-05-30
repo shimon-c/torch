@@ -47,6 +47,36 @@ def norm_data(data):
         data = norm_image(data)
     return data
 
+class Scope:
+    i = 0
+    def __enter__(self):
+        print('enter')
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print('exit')
+
+    def __next__(self):
+        self.i += 1
+        return self.i
+    def __iter__(self):
+        return self
+
+# some tests of python
+lst = [x for x in range(50)]
+l1 = lst[:-10]
+l2 = lst[-10:]
+print(f'l1={l1}')
+print(f'l2={l2}')
+doit = True
+with l1 in Scope() as s:
+    l1r = l1[-1::-1]
+    print(f'l1r={l1r}')
+def mul(x1 : float,x2 : float) -> float:
+    y = x1*x2
+    return y
+
+pp = [3,5]
+print(f'mul(,3,5) = {mul(*pp)}')
+
 img_path = 'C:/Users/shimon.cohen/data/OrSenese/test_dir/data_dir/Good/Good1.PNG'
 img = imageio.read(img_path)
 #timg = torch.from_numpy(img)

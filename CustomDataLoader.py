@@ -24,7 +24,7 @@ train_loader = torch.utils.data.DataLoader(datasets.MNIST('../data', train=True,
 """
 
 class CustomDataLoader(Dataset):
-    def __init__(self, file=None, batch_size=32):
+    def __init__(self, file=None, batch_size=32, norm_flag=True):
         if file is None:
             self.data = datasets.MNIST('../data', train=True, download=True,
                                                               transform=transforms.Compose(
@@ -39,6 +39,7 @@ class CustomDataLoader(Dataset):
         self.y_data = self.data.train_labels
         self.len = self.x_data.shape[0]
         self.batch_size = batch_size
+        self.norm_flag = norm_flag
     def __len__(self):
         return len(self.data)
 
@@ -48,13 +49,20 @@ class CustomDataLoader(Dataset):
         x = self.x_data[item,...]
         y = self.y_data[item,]
         x = x.unsqueeze(0)
-        x = norm_data(x)
+        if self.norm_flag:
+            x = norm_data(x)
         return x,y
 
     def get_loader(self):
         return torch.utils.data.DataLoader(self, batch_size=self.batch_size,
                                            shuffle=True)
-                                           #num_workers=2)
+
+
+def mul(x1: float, x2:float) -> float:
+    y = x1*x2
+    return y
+
+print(f'5*6={mul(5,6)}')
 if __name__ == '__main__':
     ld = CustomDataLoader(None)
     ldd = ld.get_loader()
