@@ -20,6 +20,7 @@ class NormLayer(torch.nn.Module):
             img = (img - mn) / ss
         return img
     def forward(self,ten):
+        ten = torch(ten,torch.float32)
         N = ten.shape[0]
         for n in range(N):
             tn = ten[n,:]
