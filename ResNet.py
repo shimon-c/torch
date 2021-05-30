@@ -80,7 +80,7 @@ class ResNet(nn.Module):
         sz = min(self.xsize, self.ysize)
 
         if self.norm_layer:
-            norm_layer = lib.norm_layer.NormLayer()
+            norm_layer = lib.norm_layer.NormLayer(self.cuda_flg)
             self.net.append(norm_layer)
         nf = self.nchans
         while sz >= 8:

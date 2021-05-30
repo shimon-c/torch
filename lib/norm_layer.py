@@ -1,8 +1,12 @@
 import torch
 
 class NormLayer(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, device):
         super().__init__()
+        if device:
+            self.device = "cuda"
+        else:
+            self.device = None
     def norm_image(self, img):
         LS = len(img.shape)
         EPS = 1e-8
@@ -20,7 +24,13 @@ class NormLayer(torch.nn.Module):
             img = (img - mn) / ss
         return img
     def forward(self,ten):
-        ten = torch(ten,torch.float32)
+        if self.device:
+            ten = torch.tensor(ten, dtype=torch.float32, device=ten.device)
+        else:
+            ten = torch.tensor(ten, dtype=torch.float32)
+
+
+        #ten = torch.tensor(ten, dtype=torch.float32)
         N = ten.shape[0]
         for n in range(N):
             tn = ten[n,:]
