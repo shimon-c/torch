@@ -48,10 +48,12 @@ class ResNetNunit(nn.Module):
             self.model.append(nn.ReLU())
     def forward(self,x):
         cnv1 = self.model[0]
-        xin = self.cnv1(x)
+        #xin = self.cnv1(x)
+        xin = cnv1(x)
         x = xin
         for lay in self.model[1:]:
-            x = lay.forward(x)
+            #x = lay.forward(x)
+            x = lay(x)
         y = x + xin
         return y
 
