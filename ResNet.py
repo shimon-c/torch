@@ -178,7 +178,8 @@ class ResNet(nn.Module):
         sz = 0
         batch_size = -1
         for batchid, (x, y) in enumerate(data):
-            y_pred = self.__call__(x)
+            #y_pred = self.__call__(x)
+            y_pred = self(x)
             batch_size = x.shape[0]
 
             y = y.cuda()
@@ -186,9 +187,12 @@ class ResNet(nn.Module):
             amax = torch.argmax(y_pred, dim=1)
             ids = amax == y
             ids = ids.cpu()
+            acc += ids.sum()
+            """
             for i in range(batch_size):
                 if ids[i]:
                     acc += 1
+            """
 
             sz += batch_size
  
