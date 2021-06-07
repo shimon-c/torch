@@ -143,7 +143,8 @@ class ResNet(nn.Module):
             tloss = 0
             sz = 0
             for batchid, (x, y) in enumerate(train_loader):
-                y_pred = self.__call__(x)
+                #y_pred = self.__call__(x)
+                y_pred = self(x)
                 batch_size = x.shape[0]
                 self.optimizer.zero_grad()
                 #loss = self.loss_fun(y_pred,y)
